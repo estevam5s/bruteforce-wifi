@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WifiBF Interface</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Roboto+Mono&display=swap');
+
+        :root {
+            --primary-color: #00aaff;
+            --background-color: #121212;
+            --surface-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --font-family: 'Poppins', sans-serif;
+            --mono-font-family: 'Roboto Mono', monospace;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--surface-color);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.1);
+            padding: 2rem;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--background-color);
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            color: var(--text-color);
+            font-family: var(--font-family);
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0088cc;
+        }
+
+        #output-container {
+            margin-top: 2rem;
+            background-color: #000;
+            border-radius: 5px;
+            padding: 1.5rem;
+            height: 400px;
+            overflow-y: auto;
+            font-family: var(--mono-font-family);
+            font-size: 0.9rem;
+            color: #0f0;
+            border: 1px solid #0f0;
+        }
+
+        #output {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>WifiBF Futuristic Interface</h1>
+        <form id="crack-form">
+            <div class="form-group">
+                <label for="ssid">Network SSID</label>
+                <input type="text" id="ssid" name="ssid" placeholder="e.g., Penelopecharmosa" required>
+            </div>
+            <div class="form-group">
+                <label for="wordlist">Absolute Path to Wordlist</label>
+                <input type="text" id="wordlist" name="wordlist" placeholder="e.g., /Users/cliente/Downloads/.../words.txt" required>
+            </div>
+            <button type="submit">Start Cracking</button>
+        </form>
+
+        <div id="output-container">
+            <pre id="output">Awaiting command...</pre>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('crack-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const ssid = document.getElementById('ssid').value;
+            const wordlist = document.getElementById('wordlist').value;
+            const outputElement = document.getElementById('output');
+            
+            outputElement.innerHTML = 'Initializing...\n';
+
+            const formData = new FormData();
+            formData.append('ssid', ssid);
+            formData.append('wordlist', wordlist);
+
+            const eventSource = new EventSource(`/crack?ssid=${encodeURIComponent(ssid)}&wordlist=${encodeURIComponent(wordlist)}`);
+
+            fetch('/crack', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                function push() {
+                    reader.read().then(({ done, value }) => {
+                        if (done) {
+                            outputElement.innerHTML += '\nProcess finished.';
+                            return;
+                        }
+                        const chunk = decoder.decode(value, {stream: true});
+                        // Server-sent events format is "data: ...\n\n"
+                        const lines = chunk.split('\n\n');
+                        lines.forEach(line => {
+                            if (line.startsWith('data: ')) {
+                                const data = line.substring(6);
+                                if (data.includes('<end-of-stream>')) {
+                                    outputElement.innerHTML += '\nProcess finished.';
+                                    return;
+                                }
+                                outputElement.innerHTML += data;
+                                outputElement.scrollTop = outputElement.scrollHeight;
+                            }
+                        });
+                        push();
+                    });
+                }
+                push();
+            })
+            .catch(error => {
+                outputElement.innerHTML += `\nError: ${error}`;
+            });
+        });
+    </script>
+
+</body>
+</html>
