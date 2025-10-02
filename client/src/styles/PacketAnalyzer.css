@@ -1,0 +1,13 @@
+.packet-analyzer {padding: 20px;}
+.analyzer-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 30px;}
+.analyzer-header h2 {font-size: 2rem;color: #667eea;}
+.analyzer-header button {padding: 12px 24px;background: rgba(102, 126, 234, 0.2);border: 2px solid #667eea;border-radius: 25px;color: #667eea;font-weight: 600;cursor: pointer;transition: all 0.3s;}
+.analyzer-header button.active {background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);color: white;border-color: #00ff88;animation: pulse 2s infinite;}
+.packets-table {background: rgba(26, 26, 46, 0.8);border-radius: 12px;padding: 20px;border: 1px solid rgba(102, 126, 234, 0.2);max-height: 600px;overflow-y: auto;}
+.packets-table table {width: 100%;border-collapse: collapse;}
+.packets-table th {padding: 12px;text-align: left;color: #667eea;border-bottom: 2px solid rgba(102, 126, 234, 0.3);font-weight: 600;}
+.packets-table td {padding: 12px;border-bottom: 1px solid rgba(102, 126, 234, 0.1);color: #ddd;}
+.protocol {padding: 4px 12px;border-radius: 12px;font-size: 0.85rem;font-weight: 600;}
+.protocol.TCP {background: #667eea;color: white;}
+.protocol.UDP {background: #00ff88;color: black;}
+.protocol.HTTP {background: #ffaa00;color: black;}

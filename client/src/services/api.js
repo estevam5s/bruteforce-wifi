@@ -101,6 +101,48 @@ export const runPentest = async (ssid, tests) => {
   return response.data;
 };
 
+// Advanced Pentesting APIs
+export const executeCode = async (language, code) => {
+  const response = await axios.post(`${API_BASE_URL}/pentest/execute`, {
+    language,
+    code
+  });
+  return response.data;
+};
+
+export const testExploit = async (target, port, payloadType) => {
+  const response = await axios.post(`${API_BASE_URL}/pentest/exploit`, {
+    target,
+    port,
+    payloadType
+  });
+  return response.data;
+};
+
+export const scanPorts = async (target, ports) => {
+  const response = await axios.post(`${API_BASE_URL}/pentest/port-scan`, {
+    target,
+    ports
+  });
+  return response.data;
+};
+
+export const crackHash = async (hash, hashType) => {
+  const response = await axios.post(`${API_BASE_URL}/pentest/hash-crack`, {
+    hash,
+    hashType
+  });
+  return response.data;
+};
+
+export const webFuzzer = async (target, wordlist) => {
+  const response = await axios.post(`${API_BASE_URL}/pentest/web-fuzzer`, {
+    target,
+    wordlist
+  });
+  return response.data;
+};
+
 // Documentation APIs
 export const getDocumentation = async () => {
   const response = await axios.get(`${API_BASE_URL}/docs/generate`);

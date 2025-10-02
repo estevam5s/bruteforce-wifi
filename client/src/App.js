@@ -9,6 +9,14 @@ import SpeedTest from './components/SpeedTest';
 import AttackMonitor from './components/AttackMonitor';
 import ChartsDashboard from './components/ChartsDashboard';
 import DocumentGenerator from './components/DocumentGenerator';
+import PentestingMode from './components/PentestingMode';
+import NetworkMapping from './components/NetworkMapping';
+import PortScanner from './components/PortScanner';
+import PacketAnalyzer from './components/PacketAnalyzer';
+import SiteAnalysis from './components/SiteAnalysis';
+import DDoSResilience from './components/DDoSResilience';
+import WebBruteforce from './components/WebBruteforce';
+import StressTest from './components/StressTest';
 import { connectWebSocket, disconnectWebSocket } from './services/websocket';
 import * as api from './services/api';
 import './App.css';
@@ -20,6 +28,8 @@ function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [status, setStatus] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [pentestMode, setPentestMode] = useState(false);
 
   useEffect(() => {
     // Conectar ao WebSocket
@@ -31,7 +41,6 @@ function App() {
 
       setLogs(prev => [...prev, newLog]);
 
-      // Atualizar status baseado no tipo de mensagem
       if (message.type === 'start') {
         setIsRunning(true);
       } else if (['success', 'finished', 'stopped'].includes(message.type)) {
@@ -52,130 +61,373 @@ function App() {
     setLogs([]);
   };
 
-  const tabs = [
-    { id: 'dashboard', label: '📊 Dashboard', icon: '📊' },
-    { id: 'bruteforce', label: '🔓 Bruteforce WiFi', icon: '🔓' },
-    { id: 'analysis', label: '📊 Análise de Rede', icon: '📊' },
-    { id: 'vulnerabilities', label: '🔍 Vulnerabilidades', icon: '🔍' },
-    { id: 'speed', label: '🚀 Teste de Velocidade', icon: '🚀' },
-    { id: 'attacks', label: '🛡️ Monitor de Ataques', icon: '🛡️' },
-    { id: 'docs', label: '📚 Documentação', icon: '📚' }
+  const menuItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: '📊',
+      category: 'Principal',
+      description: 'Visão geral do sistema'
+    },
+    {
+      id: 'analysis',
+      label: 'Análise de Rede',
+      icon: '🔍',
+      category: 'Análise',
+      description: 'Análise completa da rede WiFi'
+    },
+    {
+      id: 'vulnerabilities',
+      label: 'Vulnerabilidades',
+      icon: '🛡️',
+      category: 'Segurança',
+      description: 'Scanner de vulnerabilidades'
+    },
+    {
+      id: 'speed',
+      label: 'Teste de Velocidade',
+      icon: '🚀',
+      category: 'Performance',
+      description: 'Medição de velocidade'
+    },
+    {
+      id: 'attacks',
+      label: 'Monitor de Ataques',
+      icon: '⚠️',
+      category: 'Segurança',
+      description: 'Detecção de ameaças'
+    },
+    {
+      id: 'bruteforce',
+      label: 'Bruteforce WiFi',
+      icon: '🔓',
+      category: 'Testes',
+      description: 'Teste de força bruta WiFi'
+    },
+    {
+      id: 'webbruteforce',
+      label: 'Bruteforce Web Login',
+      icon: '🔑',
+      category: 'Testes',
+      description: 'Teste de força bruta em logins web'
+    },
+    {
+      id: 'stresstest',
+      label: 'Teste de Estresse DDoS',
+      icon: '💥',
+      category: 'Testes',
+      description: 'Teste de disponibilidade sob carga'
+    },
+    {
+      id: 'pentesting',
+      label: 'Modo Pentesting',
+      icon: '🎯',
+      category: 'Avançado',
+      description: 'Testes de penetração'
+    },
+    {
+      id: 'mapping',
+      label: 'Mapeamento de Rede',
+      icon: '🗺️',
+      category: 'Avançado',
+      description: 'Topologia e dispositivos'
+    },
+    {
+      id: 'ports',
+      label: 'Scanner de Portas',
+      icon: '🔌',
+      category: 'Avançado',
+      description: 'Análise de portas abertas'
+    },
+    {
+      id: 'packets',
+      label: 'Análise de Pacotes',
+      icon: '📡',
+      category: 'Avançado',
+      description: 'Captura e análise de tráfego'
+    },
+    {
+      id: 'siteanalysis',
+      label: 'Análise de Sites',
+      icon: '🔍',
+      category: 'Avançado',
+      description: 'Web scraping e análise completa'
+    },
+    {
+      id: 'ddos',
+      label: 'Resiliência DDoS',
+      icon: '🛡️',
+      category: 'Avançado',
+      description: 'Análise de proteções DDoS'
+    },
+    {
+      id: 'docs',
+      label: 'Documentação',
+      icon: '📚',
+      category: 'Ajuda',
+      description: 'Guias e documentação'
+    }
   ];
 
+  const categories = [...new Set(menuItems.map(item => item.category))];
+
   return (
-    <div className="App">
+    <div className={`App theme-dark ${pentestMode ? 'pentest-mode' : ''}`}>
+      {/* Header com efeito glassmorphism */}
       <header className="app-header">
         <div className="header-content">
+          <button
+            className="hamburger-menu"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
           <div className="header-title">
-            <h1>🔐 WiFi Security Testing Tool</h1>
-            <p className="header-subtitle">Ferramenta Profissional de Análise de Segurança WiFi</p>
-          </div>
-          <div className="header-warning">
-            <span className="warning-badge">⚠️ APENAS USO EDUCACIONAL</span>
-          </div>
-        </div>
-      </header>
-
-      <nav className="app-navigation">
-        <div className="tabs">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              <span className="tab-icon">{tab.icon}</span>
-              <span className="tab-label">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
-
-      <div className="app-content">
-        {/* Dashboard */}
-        {activeTab === 'dashboard' && (
-          <div className="tab-content">
-            <ChartsDashboard api={api} />
-          </div>
-        )}
-
-        {/* Bruteforce WiFi (Original) */}
-        {activeTab === 'bruteforce' && (
-          <div className="tab-content">
-            <div className="bruteforce-layout">
-              <div className="left-panel">
-                <NetworkScanner
-                  selectedNetwork={selectedNetwork}
-                  onSelectNetwork={setSelectedNetwork}
-                  disabled={isRunning}
-                />
-
-                <WordlistManager
-                  selectedWordlist={selectedWordlist}
-                  onSelectWordlist={setSelectedWordlist}
-                  disabled={isRunning}
-                />
-              </div>
-
-              <div className="right-panel">
-                <BruteforcePanel
-                  selectedNetwork={selectedNetwork}
-                  selectedWordlist={selectedWordlist}
-                  isRunning={isRunning}
-                  status={status}
-                />
-
-                <LogViewer
-                  logs={logs}
-                  onClear={handleClearLogs}
-                />
+            <div className="logo-container">
+              <div className="logo-icon">🔐</div>
+              <div>
+                <h1>WiFi Security Testing Tool</h1>
+                <p className="header-subtitle">Ferramenta Profissional de Análise de Segurança</p>
               </div>
             </div>
           </div>
-        )}
 
-        {/* Análise de Rede */}
-        {activeTab === 'analysis' && (
-          <div className="tab-content">
-            <NetworkAnalysis api={api} />
+          <div className="header-actions">
+            <button
+              className={`mode-toggle ${pentestMode ? 'active' : ''}`}
+              onClick={() => setPentestMode(!pentestMode)}
+              title="Modo Pentesting"
+            >
+              {pentestMode ? '🎯 Pentest ON' : '🎯 Pentest OFF'}
+            </button>
+            <div className="status-indicator">
+              <span className="status-dot"></span>
+              <span>Online</span>
+            </div>
+          </div>
+        </div>
+
+        {pentestMode && (
+          <div className="pentest-banner">
+            <span className="warning-icon">⚠️</span>
+            MODO PENTESTING ATIVO - USE APENAS EM REDES AUTORIZADAS
+            <span className="warning-icon">⚠️</span>
           </div>
         )}
+      </header>
 
-        {/* Scanner de Vulnerabilidades */}
-        {activeTab === 'vulnerabilities' && (
-          <div className="tab-content">
-            <VulnerabilityScanner api={api} />
-          </div>
-        )}
+      {/* Menu Lateral Hamburguer */}
+      <div className={`sidebar ${menuOpen ? 'open' : ''}`}>
+        <div className="sidebar-header">
+          <h2>Menu</h2>
+          <button className="close-sidebar" onClick={() => setMenuOpen(false)}>✕</button>
+        </div>
 
-        {/* Teste de Velocidade */}
-        {activeTab === 'speed' && (
-          <div className="tab-content">
-            <SpeedTest api={api} />
-          </div>
-        )}
+        <div className="sidebar-content">
+          {categories.map(category => (
+            <div key={category} className="menu-category">
+              <h3>{category}</h3>
+              <div className="menu-items">
+                {menuItems
+                  .filter(item => item.category === category)
+                  .map(item => (
+                    <button
+                      key={item.id}
+                      className={`menu-item ${activeTab === item.id ? 'active' : ''}`}
+                      onClick={() => {
+                        setActiveTab(item.id);
+                        setMenuOpen(false);
+                      }}
+                    >
+                      <span className="menu-icon">{item.icon}</span>
+                      <div className="menu-text">
+                        <span className="menu-label">{item.label}</span>
+                        <span className="menu-description">{item.description}</span>
+                      </div>
+                      {activeTab === item.id && <span className="active-indicator">●</span>}
+                    </button>
+                  ))}
+              </div>
+            </div>
+          ))}
+        </div>
 
-        {/* Monitor de Ataques */}
-        {activeTab === 'attacks' && (
-          <div className="tab-content">
-            <AttackMonitor api={api} />
+        <div className="sidebar-footer">
+          <div className="version-info">
+            <span>v2.0.0 Professional</span>
+            <span className="education-badge">🎓 Educacional</span>
           </div>
-        )}
-
-        {/* Documentação */}
-        {activeTab === 'docs' && (
-          <div className="tab-content">
-            <DocumentGenerator api={api} />
-          </div>
-        )}
+        </div>
       </div>
 
+      {/* Overlay do Menu */}
+      {menuOpen && <div className="sidebar-overlay" onClick={() => setMenuOpen(false)}></div>}
+
+      {/* Breadcrumb */}
+      <div className="breadcrumb">
+        <span className="breadcrumb-home" onClick={() => setActiveTab('dashboard')}>Home</span>
+        <span className="breadcrumb-separator">›</span>
+        <span className="breadcrumb-current">
+          {menuItems.find(item => item.id === activeTab)?.label || 'Dashboard'}
+        </span>
+      </div>
+
+      {/* Conteúdo Principal */}
+      <div className="app-content">
+        <div className="content-wrapper">
+          {/* Dashboard */}
+          {activeTab === 'dashboard' && (
+            <div className="tab-content fade-in">
+              <ChartsDashboard api={api} />
+            </div>
+          )}
+
+          {/* Bruteforce WiFi */}
+          {activeTab === 'bruteforce' && (
+            <div className="tab-content fade-in">
+              <div className="section-header">
+                <h2>🔓 Bruteforce WiFi</h2>
+                <p>Teste de força bruta em redes WiFi (apenas uso educacional)</p>
+              </div>
+              <div className="bruteforce-layout">
+                <div className="left-panel">
+                  <NetworkScanner
+                    selectedNetwork={selectedNetwork}
+                    onSelectNetwork={setSelectedNetwork}
+                    disabled={isRunning}
+                  />
+                  <WordlistManager
+                    selectedWordlist={selectedWordlist}
+                    onSelectWordlist={setSelectedWordlist}
+                    disabled={isRunning}
+                  />
+                </div>
+                <div className="right-panel">
+                  <BruteforcePanel
+                    selectedNetwork={selectedNetwork}
+                    selectedWordlist={selectedWordlist}
+                    isRunning={isRunning}
+                    status={status}
+                  />
+                  <LogViewer
+                    logs={logs}
+                    onClear={handleClearLogs}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bruteforce Web Login */}
+          {activeTab === 'webbruteforce' && (
+            <div className="tab-content fade-in">
+              <WebBruteforce />
+            </div>
+          )}
+
+          {/* Teste de Estresse DDoS */}
+          {activeTab === 'stresstest' && (
+            <div className="tab-content fade-in">
+              <StressTest />
+            </div>
+          )}
+
+          {/* Análise de Rede */}
+          {activeTab === 'analysis' && (
+            <div className="tab-content fade-in">
+              <NetworkAnalysis api={api} />
+            </div>
+          )}
+
+          {/* Scanner de Vulnerabilidades */}
+          {activeTab === 'vulnerabilities' && (
+            <div className="tab-content fade-in">
+              <VulnerabilityScanner api={api} />
+            </div>
+          )}
+
+          {/* Teste de Velocidade */}
+          {activeTab === 'speed' && (
+            <div className="tab-content fade-in">
+              <SpeedTest api={api} />
+            </div>
+          )}
+
+          {/* Monitor de Ataques */}
+          {activeTab === 'attacks' && (
+            <div className="tab-content fade-in">
+              <AttackMonitor api={api} />
+            </div>
+          )}
+
+          {/* Modo Pentesting */}
+          {activeTab === 'pentesting' && (
+            <div className="tab-content fade-in">
+              <PentestingMode api={api} pentestMode={pentestMode} />
+            </div>
+          )}
+
+          {/* Mapeamento de Rede */}
+          {activeTab === 'mapping' && (
+            <div className="tab-content fade-in">
+              <NetworkMapping api={api} />
+            </div>
+          )}
+
+          {/* Scanner de Portas */}
+          {activeTab === 'ports' && (
+            <div className="tab-content fade-in">
+              <PortScanner api={api} />
+            </div>
+          )}
+
+          {/* Análise de Pacotes */}
+          {activeTab === 'packets' && (
+            <div className="tab-content fade-in">
+              <PacketAnalyzer api={api} />
+            </div>
+          )}
+
+          {/* Análise de Sites */}
+          {activeTab === 'siteanalysis' && (
+            <div className="tab-content fade-in">
+              <SiteAnalysis />
+            </div>
+          )}
+
+          {/* Resiliência DDoS */}
+          {activeTab === 'ddos' && (
+            <div className="tab-content fade-in">
+              <DDoSResilience />
+            </div>
+          )}
+
+          {/* Documentação */}
+          {activeTab === 'docs' && (
+            <div className="tab-content fade-in">
+              <DocumentGenerator api={api} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Footer */}
       <footer className="app-footer">
         <div className="footer-content">
           <p>Desenvolvido para fins educacionais e testes de segurança autorizados</p>
-          <p className="footer-version">v2.0.0 - Professional IT Tool</p>
+          <div className="footer-links">
+            <span>v2.0.0 - Professional IT Tool</span>
+            <span>•</span>
+            <span>© 2024 WiFi Security Testing Tool</span>
+          </div>
         </div>
       </footer>
+
+      {/* Particles Background Effect */}
+      <div className="particles-background"></div>
     </div>
   );
 }

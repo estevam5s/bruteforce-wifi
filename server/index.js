@@ -9,6 +9,11 @@ const wifiRoutes = require('./routes/wifi');
 const wordlistRoutes = require('./routes/wordlist');
 const networkRoutes = require('./routes/network');
 const documentationRoutes = require('./routes/documentation');
+const pentestRoutes = require('./routes/pentest');
+const siteAnalysisRoutes = require('./routes/siteAnalysis');
+const ddosResilienceRoutes = require('./routes/ddosResilience');
+const webBruteforceRoutes = require('./routes/webBruteforce');
+const stressTestRoutes = require('./routes/stressTest');
 
 const app = express();
 const server = http.createServer(app);
@@ -64,6 +69,11 @@ app.use('/api/wifi', wifiRoutes);
 app.use('/api/wordlist', wordlistRoutes);
 app.use('/api/network', networkRoutes);
 app.use('/api/docs', documentationRoutes);
+app.use('/api/pentest', pentestRoutes);
+app.use('/api/site', siteAnalysisRoutes);
+app.use('/api/ddos', ddosResilienceRoutes);
+app.use('/api/webbruteforce', webBruteforceRoutes);
+app.use('/api/stresstest', stressTestRoutes);
 
 // Servir arquivos estáticos do React em produção
 if (process.env.NODE_ENV === 'production') {
