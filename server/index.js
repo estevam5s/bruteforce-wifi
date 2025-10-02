@@ -43,6 +43,20 @@ global.broadcastLog = (message) => {
   });
 };
 
+// Rota raiz
+app.get('/', (req, res) => {
+  res.json({
+    message: 'WiFi Bruteforce API',
+    endpoints: {
+      'GET /api/wifi/scan': 'Escanear redes WiFi',
+      'POST /api/wifi/start': 'Iniciar bruteforce',
+      'POST /api/wifi/stop': 'Parar bruteforce',
+      'GET /api/wordlist/list': 'Listar wordlists'
+    },
+    frontend: 'http://localhost:3000'
+  });
+});
+
 // Rotas
 app.use('/api/wifi', wifiRoutes);
 app.use('/api/wordlist', wordlistRoutes);
