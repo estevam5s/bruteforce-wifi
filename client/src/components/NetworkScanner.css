@@ -1,0 +1,117 @@
+.network-scanner {
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.scanner-actions {
+  margin-bottom: 15px;
+}
+
+.networks-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.network-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.network-item:hover:not(.disabled) {
+  border-color: #667eea;
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.network-item.selected {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.network-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.network-info {
+  flex: 1;
+}
+
+.network-name {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.network-details {
+  display: flex;
+  gap: 15px;
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.network-security {
+  font-size: 0.85rem;
+  color: #868e96;
+}
+
+.network-signal {
+  text-align: right;
+}
+
+.signal-indicator {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.signal-indicator.excellent {
+  background: #51cf66;
+  color: white;
+}
+
+.signal-indicator.good {
+  background: #94d82d;
+  color: white;
+}
+
+.signal-indicator.fair {
+  background: #ffd43b;
+  color: #333;
+}
+
+.signal-indicator.poor {
+  background: #ff6b6b;
+  color: white;
+}
+
+.signal-label {
+  font-size: 0.8rem;
+  color: #868e96;
+}
+
+.no-networks {
+  text-align: center;
+  color: #868e96;
+  padding: 30px;
+}
+
+.error-message {
+  background: #ffe3e3;
+  color: #c92a2a;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
