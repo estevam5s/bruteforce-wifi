@@ -1,0 +1,245 @@
+/* NetworkAnalysis.css */
+.network-analysis {
+  padding: 20px;
+}
+
+.analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.analysis-header h2 {
+  font-size: 2rem;
+  color: #667eea;
+  margin: 0;
+}
+
+.btn-analyze {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-analyze:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.btn-analyze:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.analysis-error {
+  background: rgba(255, 68, 68, 0.2);
+  border-left: 4px solid #ff4444;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  color: #ff8888;
+}
+
+.analysis-results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.analysis-card {
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+}
+
+.card-header h3 {
+  font-size: 1.5rem;
+  color: #667eea;
+  margin: 0;
+}
+
+.security-badge, .performance-badge, .device-count {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.card-body {
+  color: #ddd;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background: rgba(15, 15, 30, 0.5);
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #888;
+}
+
+.info-value {
+  color: #fff;
+  font-weight: 500;
+}
+
+.vulnerabilities-section, .recommendations-section {
+  margin-top: 20px;
+}
+
+.vulnerabilities-section h4, .recommendations-section h4 {
+  color: #667eea;
+  margin-bottom: 15px;
+}
+
+.vulnerability-item {
+  background: rgba(255, 68, 68, 0.1);
+  border-left: 4px solid #ff4444;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.vuln-level {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.vuln-crítico {
+  background: #ff0000;
+  color: white;
+}
+
+.vuln-alto {
+  background: #ff4444;
+  color: white;
+}
+
+.vuln-médio {
+  background: #ffaa00;
+  color: white;
+}
+
+.recommendations-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.recommendations-section li {
+  padding: 10px 15px;
+  margin-bottom: 8px;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+}
+
+.devices-list {
+  display: grid;
+  gap: 12px;
+}
+
+.device-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(15, 15, 30, 0.5);
+  border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.device-icon {
+  font-size: 1.5rem;
+}
+
+.device-info {
+  flex: 1;
+}
+
+.device-ip {
+  font-weight: 600;
+  color: #00ff88;
+  font-size: 1.1rem;
+}
+
+.device-mac {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.device-vendor {
+  color: #667eea;
+  font-size: 0.85rem;
+}
+
+.device-more {
+  text-align: center;
+  padding: 10px;
+  color: #888;
+  font-style: italic;
+}
+
+.dns-servers h4 {
+  color: #667eea;
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
+.dns-servers ul {
+  list-style: none;
+  padding: 0;
+}
+
+.dns-servers li {
+  padding: 8px 12px;
+  background: rgba(15, 15, 30, 0.5);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  color: #00ff88;
+  font-family: monospace;
+}
+
+.analysis-timestamp {
+  text-align: center;
+  padding: 15px;
+  color: #888;
+  font-size: 0.9rem;
+  margin-top: 20px;
+}

@@ -56,3 +56,66 @@ export const deleteWordlist = async (filename) => {
   const response = await axios.delete(`${API_BASE_URL}/wordlist/${filename}`);
   return response.data;
 };
+
+// Network Analysis APIs
+export const analyzeNetwork = async () => {
+  const response = await axios.get(`${API_BASE_URL}/network/analyze`);
+  return response.data;
+};
+
+export const scanVulnerabilities = async () => {
+  const response = await axios.get(`${API_BASE_URL}/network/vulnerabilities`);
+  return response.data;
+};
+
+export const speedTest = async () => {
+  const response = await axios.get(`${API_BASE_URL}/network/speed-test`);
+  return response.data;
+};
+
+export const getNetworkStatus = async () => {
+  const response = await axios.get(`${API_BASE_URL}/network/status`);
+  return response.data;
+};
+
+export const detectAttacks = async () => {
+  const response = await axios.get(`${API_BASE_URL}/network/attack-detection`);
+  return response.data;
+};
+
+export const getConnectedDevices = async () => {
+  const response = await axios.get(`${API_BASE_URL}/network/devices`);
+  return response.data;
+};
+
+export const getPerformance = async () => {
+  const response = await axios.get(`${API_BASE_URL}/network/performance`);
+  return response.data;
+};
+
+export const runPentest = async (ssid, tests) => {
+  const response = await axios.post(`${API_BASE_URL}/network/pentest`, {
+    ssid,
+    tests
+  });
+  return response.data;
+};
+
+// Documentation APIs
+export const getDocumentation = async () => {
+  const response = await axios.get(`${API_BASE_URL}/docs/generate`);
+  return response.data;
+};
+
+export const getUserGuide = async () => {
+  const response = await axios.get(`${API_BASE_URL}/docs/user-guide`);
+  return response.data;
+};
+
+export const exportReport = async (format, data) => {
+  const response = await axios.post(`${API_BASE_URL}/docs/export`, {
+    format,
+    data
+  });
+  return response.data;
+};

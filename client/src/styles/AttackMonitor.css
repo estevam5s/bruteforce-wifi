@@ -1,0 +1,50 @@
+.attack-monitor {padding: 20px;}
+.monitor-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 30px;flex-wrap: wrap;gap: 15px;}
+.monitor-header h2 {font-size: 2rem;color: #667eea;margin: 0;}
+.monitor-controls {display: flex;gap: 10px;}
+.btn-auto-refresh {background: rgba(102, 126, 234, 0.2);border: 2px solid #667eea;color: #667eea;}
+.btn-auto-refresh.active {background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);color: white;}
+.monitor-error {background: rgba(255, 68, 68, 0.2);border-left: 4px solid #ff4444;padding: 15px 20px;border-radius: 8px;margin-bottom: 20px;color: #ff8888;}
+.monitor-results {display: flex;flex-direction: column;gap: 20px;}
+.security-status-card {background: rgba(26, 26, 46, 0.8);border: 1px solid rgba(102, 126, 234, 0.2);border-radius: 12px;padding: 40px;text-align: center;}
+.status-indicator {display: inline-block;padding: 40px;border: 4px solid;border-radius: 16px;}
+.status-icon {font-size: 4rem;margin-bottom: 15px;}
+.status-text {font-size: 2rem;font-weight: 700;margin-bottom: 15px;}
+.status-details {display: flex;flex-direction: column;gap: 8px;color: #888;font-size: 0.9rem;}
+.auto-refresh-indicator {margin-top: 20px;color: #00ff88;display: flex;align-items: center;justify-content: center;gap: 10px;}
+.pulse-dot {width: 8px;height: 8px;background: #00ff88;border-radius: 50%;animation: pulse-anim 1.5s infinite;}
+@keyframes pulse-anim {0%, 100% {opacity: 1;transform: scale(1);}50% {opacity: 0.5;transform: scale(1.2);}}
+.attacks-card,.metrics-card,.attack-guide-card,.protection-tips-card {background: rgba(26, 26, 46, 0.8);border: 1px solid rgba(102, 126, 234, 0.2);border-radius: 12px;padding: 24px;}
+.attacks-list {display: flex;flex-direction: column;gap: 15px;}
+.attack-item {background: rgba(15, 15, 30, 0.5);border-radius: 8px;padding: 20px;border-left: 4px solid #ff4444;}
+.attack-header {display: flex;align-items: center;gap: 15px;margin-bottom: 12px;flex-wrap: wrap;}
+.attack-severity {padding: 6px 14px;border-radius: 6px;font-size: 0.8rem;font-weight: 700;color: white;}
+.attack-time {color: #888;font-size: 0.85rem;margin-left: auto;}
+.attack-description {color: #ddd;margin-bottom: 15px;}
+.attack-actions h5 {color: #667eea;margin-bottom: 10px;font-size: 0.95rem;}
+.attack-actions ul {margin: 0;padding-left: 20px;color: #ddd;}
+.no-attacks {text-align: center;padding: 60px 20px;}
+.checks-list {display: flex;flex-direction: column;gap: 10px;}
+.check-item {display: flex;align-items: center;gap: 15px;padding: 15px;background: rgba(15, 15, 30, 0.5);border-radius: 8px;}
+.check-status {font-size: 1.5rem;width: 30px;text-align: center;}
+.check-status.ok {color: #00ff88;}
+.check-status.warning {color: #ffaa00;}
+.check-status.alert {color: #ff4444;}
+.check-info {flex: 1;}
+.check-type {display: block;font-weight: 600;color: #ddd;margin-bottom: 4px;}
+.check-detail {display: block;color: #888;font-size: 0.85rem;}
+.check-badge {padding: 4px 12px;border-radius: 12px;font-size: 0.85rem;font-weight: 600;}
+.check-badge.ok {background: #00ff88;color: #000;}
+.check-badge.warning {background: #ffaa00;color: #000;}
+.check-badge.alert {background: #ff4444;color: #fff;}
+.guide-grid {display: grid;grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));gap: 20px;}
+.guide-item {background: rgba(15, 15, 30, 0.5);padding: 20px;border-radius: 8px;border-left: 4px solid #667eea;}
+.guide-item h4 {color: #667eea;margin-bottom: 12px;}
+.guide-item p {color: #ddd;margin-bottom: 15px;line-height: 1.6;}
+.guide-indicators strong {color: #888;display: block;margin-bottom: 8px;}
+.guide-indicators ul {margin: 0;padding-left: 20px;color: #ddd;}
+.tips-grid {display: grid;grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));gap: 15px;}
+.tip-item {display: flex;flex-direction: column;align-items: center;text-align: center;padding: 20px;background: rgba(15, 15, 30, 0.5);border-radius: 8px;border: 1px solid rgba(102, 126, 234, 0.2);}
+.tip-number {width: 40px;height: 40px;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);border-radius: 50%;display: flex;align-items: center;justify-content: center;font-size: 1.2rem;font-weight: 700;margin-bottom: 12px;}
+.tip-item strong {color: #667eea;display: block;margin-bottom: 6px;}
+.tip-item p {color: #ddd;font-size: 0.85rem;margin: 0;}

@@ -7,6 +7,8 @@ const path = require('path');
 
 const wifiRoutes = require('./routes/wifi');
 const wordlistRoutes = require('./routes/wordlist');
+const networkRoutes = require('./routes/network');
+const documentationRoutes = require('./routes/documentation');
 
 const app = express();
 const server = http.createServer(app);
@@ -60,6 +62,8 @@ app.get('/', (req, res) => {
 // Rotas
 app.use('/api/wifi', wifiRoutes);
 app.use('/api/wordlist', wordlistRoutes);
+app.use('/api/network', networkRoutes);
+app.use('/api/docs', documentationRoutes);
 
 // Servir arquivos estáticos do React em produção
 if (process.env.NODE_ENV === 'production') {

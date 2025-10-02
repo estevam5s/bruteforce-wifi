@@ -1,0 +1,37 @@
+.speed-test {padding: 20px;}
+.speedtest-header {display: flex;justify-content: space-between;align-items: center;margin-bottom: 30px;flex-wrap: wrap;gap: 15px;}
+.speedtest-header h2 {font-size: 2rem;color: #667eea;margin: 0;}
+.btn-test {background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);color: white;padding: 12px 28px;border-radius: 8px;}
+.speedtest-error {background: rgba(255, 68, 68, 0.2);border-left: 4px solid #ff4444;padding: 15px 20px;border-radius: 8px;margin-bottom: 20px;color: #ff8888;}
+.speedtest-results {display: flex;flex-direction: column;gap: 20px;}
+.speed-status-card {background: rgba(26, 26, 46, 0.8);border: 1px solid rgba(102, 126, 234, 0.2);border-radius: 12px;padding: 40px;text-align: center;}
+.speed-indicator {display: inline-block;padding: 30px 50px;border: 4px solid;border-radius: 16px;}
+.speed-label {display: block;color: #888;font-size: 0.9rem;margin-bottom: 10px;}
+.speed-value {display: block;font-size: 2.5rem;font-weight: 700;margin-bottom: 10px;}
+.speed-score {display: block;color: #888;font-size: 1rem;}
+.metrics-grid {display: grid;grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));gap: 20px;}
+.metric-card {background: rgba(26, 26, 46, 0.8);border: 1px solid rgba(102, 126, 234, 0.2);border-radius: 12px;padding: 24px;display: flex;gap: 20px;align-items: center;}
+.metric-icon {font-size: 2.5rem;}
+.metric-info {flex: 1;}
+.metric-info h3 {color: #667eea;margin-bottom: 10px;font-size: 1rem;}
+.metric-value {display: flex;align-items: baseline;gap: 8px;margin-bottom: 8px;}
+.value-number {font-size: 2.2rem;font-weight: 700;color: #00ff88;}
+.value-unit {color: #888;font-size: 1rem;}
+.metric-detail {color: #888;font-size: 0.85rem;}
+.server-value {font-size: 1.2rem;color: #00ff88;font-family: monospace;}
+.interpretation-card,.history-card,.reference-guide-card {background: rgba(26, 26, 46, 0.8);border: 1px solid rgba(102, 126, 234, 0.2);border-radius: 12px;padding: 24px;}
+.interpretation-grid {display: grid;gap: 20px;}
+.interp-item {padding: 20px;background: rgba(15, 15, 30, 0.5);border-radius: 8px;border-left: 4px solid #667eea;}
+.interp-item h4 {color: #667eea;margin-bottom: 10px;}
+.interp-item p {color: #ddd;line-height: 1.6;margin: 0;}
+.chart-container {height: 300px;margin-bottom: 20px;}
+.history-table table {width: 100%;border-collapse: collapse;}
+.history-table th,.history-table td {padding: 12px;text-align: left;border-bottom: 1px solid rgba(102, 126, 234, 0.2);}
+.history-table th {color: #667eea;font-weight: 600;}
+.history-table td {color: #ddd;}
+.status-badge {padding: 4px 12px;border-radius: 12px;font-size: 0.85rem;font-weight: 600;color: white;}
+.reference-grid {display: grid;grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));gap: 20px;}
+.ref-section h4 {color: #667eea;margin-bottom: 15px;}
+.ref-section ul {list-style: none;padding: 0;}
+.ref-section li {padding: 8px 12px;margin-bottom: 6px;background: rgba(15, 15, 30, 0.5);border-radius: 6px;display: flex;align-items: center;gap: 10px;}
+.ref-indicator {width: 20px;height: 20px;border-radius: 4px;display: inline-block;}
