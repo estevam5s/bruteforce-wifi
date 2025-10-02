@@ -17,6 +17,7 @@ import SiteAnalysis from './components/SiteAnalysis';
 import DDoSResilience from './components/DDoSResilience';
 import WebBruteforce from './components/WebBruteforce';
 import StressTest from './components/StressTest';
+import CyberLab from './components/CyberLab';
 import { connectWebSocket, disconnectWebSocket } from './services/websocket';
 import * as api from './services/api';
 import './App.css';
@@ -117,6 +118,13 @@ function App() {
       icon: '💥',
       category: 'Testes',
       description: 'Teste de disponibilidade sob carga'
+    },
+    {
+      id: 'cyberlab',
+      label: 'Laboratório Docker',
+      icon: '🧪',
+      category: 'Avançado',
+      description: 'Ambiente prático com containers'
     },
     {
       id: 'pentesting',
@@ -332,6 +340,13 @@ function App() {
           {activeTab === 'stresstest' && (
             <div className="tab-content fade-in">
               <StressTest />
+            </div>
+          )}
+
+          {/* Laboratório Docker */}
+          {activeTab === 'cyberlab' && (
+            <div className="tab-content fade-in">
+              <CyberLab />
             </div>
           )}
 
