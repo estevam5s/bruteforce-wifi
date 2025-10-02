@@ -2,20 +2,40 @@ const express = require('express');
 const router = express.Router();
 const { spawn, exec } = require('child_process');
 const Docker = require('dockerode');
+const { getLaboratoryById, getAllLaboratories, getCategories } = require('../data/laboratories');
 
-// Tentar diferentes sockets do Docker
+// Configuração do Docker baseada no sistema operacional
+const os = require('os');
+const fs = require('fs');
+
 let docker;
-try {
-  // Tentar socket padrão do Mac
-  docker = new Docker({ socketPath: '/var/run/docker.sock' });
-} catch (error) {
-  try {
-    // Tentar Docker Desktop no Mac
-    docker = new Docker({ socketPath: '/Users/cliente/.docker/run/docker.sock' });
-  } catch (error2) {
-    // Última tentativa: Docker via host/port
-    docker = new Docker({ host: 'localhost', port: 2375 });
+
+// Função para detectar o socket do Docker
+function getDockerSocket() {
+  const possibleSockets = [
+    '/Users/cliente/.docker/run/docker.sock',  // Docker Desktop no Mac (usuário específico)
+    `${os.homedir()}/.docker/run/docker.sock`, // Docker Desktop no Mac (qualquer usuário)
+    '/var/run/docker.sock',                    // Linux/Mac padrão
+  ];
+
+  for (const socketPath of possibleSockets) {
+    if (fs.existsSync(socketPath)) {
+      console.log(`✅ Docker socket encontrado: ${socketPath}`);
+      return socketPath;
+    }
   }
+
+  console.log('⚠️ Nenhum socket Docker encontrado. Usando configuração padrão.');
+  return '/var/run/docker.sock';
+}
+
+try {
+  const socketPath = getDockerSocket();
+  docker = new Docker({ socketPath });
+  console.log('🐳 Docker inicializado com sucesso');
+} catch (error) {
+  console.error('❌ Erro ao inicializar Docker:', error.message);
+  docker = new Docker({ socketPath: '/var/run/docker.sock' }); // Fallback
 }
 
 // Templates de containers disponíveis
@@ -300,7 +320,7 @@ router.get('/containers', async (req, res) => {
 // Criar container
 router.post('/create', async (req, res) => {
   try {
-    const { templateId, containerName } = req.body;
+    const { templateId, containerName, customImage } = req.body;
 
     if (!templateId) {
       return res.status(400).json({ error: 'Template ID is required' });
@@ -312,10 +332,11 @@ router.post('/create', async (req, res) => {
     }
 
     const name = containerName || `cyberlab-${templateId}-${Date.now()}`;
+    const imageToUse = customImage || template.image;
 
     // Verificar se a imagem existe, se não, fazer pull
     try {
-      await docker.getImage(template.image).inspect();
+      await docker.getImage(imageToUse).inspect();
     } catch (error) {
       // Imagem não existe, iniciar pull
       const wss = req.app.get('wss');
@@ -323,14 +344,15 @@ router.post('/create', async (req, res) => {
       return res.json({
         message: 'Image needs to be pulled first',
         action: 'pull',
-        image: template.image,
-        name
+        image: imageToUse,
+        name,
+        templateId
       });
     }
 
     // Criar container
     const container = await docker.createContainer({
-      Image: template.image,
+      Image: imageToUse,
       name,
       Cmd: template.cmd,
       Tty: template.tty || false,
@@ -363,7 +385,7 @@ router.post('/create', async (req, res) => {
         id: info.Id.substring(0, 12),
         fullId: info.Id,
         name: info.Name.replace('/', ''),
-        image: template.image,
+        image: imageToUse,
         status: info.State.Status,
         template: templateId
       }
@@ -623,5 +645,373 @@ const broadcastToClients = (wss, message) => {
     });
   }
 };
+
+// ========== SISTEMA DE LABORATÓRIOS EDUCACIONAIS ==========
+
+// Armazenamento em memória do progresso (em produção, usar banco de dados)
+const userProgress = {};
+
+// Listar todos os laboratórios disponíveis
+router.get('/laboratories', (req, res) => {
+  try {
+    const labs = getAllLaboratories();
+    const categories = getCategories();
+
+    res.json({
+      success: true,
+      laboratories: labs,
+      categories,
+      total: labs.length
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to load laboratories',
+      details: error.message
+    });
+  }
+});
+
+// Obter detalhes completos de um laboratório
+router.get('/laboratories/:labId', (req, res) => {
+  try {
+    const { labId } = req.params;
+    const lab = getLaboratoryById(labId);
+
+    if (!lab) {
+      return res.status(404).json({
+        error: 'Laboratory not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      laboratory: lab
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to load laboratory',
+      details: error.message
+    });
+  }
+});
+
+// Obter progresso do usuário em um laboratório
+router.get('/progress/:userId/:labId', (req, res) => {
+  try {
+    const { userId, labId } = req.params;
+    const key = `${userId}_${labId}`;
+
+    const progress = userProgress[key] || {
+      labId,
+      userId,
+      completedLessons: [],
+      completedExercises: [],
+      completedChallenges: [],
+      startedAt: new Date().toISOString(),
+      lastAccessedAt: new Date().toISOString(),
+      totalPoints: 0,
+      certificates: []
+    };
+
+    res.json({
+      success: true,
+      progress
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to load progress',
+      details: error.message
+    });
+  }
+});
+
+// Marcar lição como concluída
+router.post('/progress/:userId/:labId/lesson', (req, res) => {
+  try {
+    const { userId, labId } = req.params;
+    const { moduleId, lessonId } = req.body;
+    const key = `${userId}_${labId}`;
+
+    if (!userProgress[key]) {
+      userProgress[key] = {
+        labId,
+        userId,
+        completedLessons: [],
+        completedExercises: [],
+        completedChallenges: [],
+        startedAt: new Date().toISOString(),
+        lastAccessedAt: new Date().toISOString(),
+        totalPoints: 0,
+        certificates: []
+      };
+    }
+
+    const lessonKey = `${moduleId}_${lessonId}`;
+    if (!userProgress[key].completedLessons.includes(lessonKey)) {
+      userProgress[key].completedLessons.push(lessonKey);
+      userProgress[key].totalPoints += 10; // 10 pontos por lição
+    }
+
+    userProgress[key].lastAccessedAt = new Date().toISOString();
+
+    res.json({
+      success: true,
+      progress: userProgress[key]
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to update progress',
+      details: error.message
+    });
+  }
+});
+
+// Marcar exercício como concluído
+router.post('/progress/:userId/:labId/exercise', (req, res) => {
+  try {
+    const { userId, labId } = req.params;
+    const { moduleId, lessonId, exerciseId, solution } = req.body;
+    const key = `${userId}_${labId}`;
+
+    if (!userProgress[key]) {
+      userProgress[key] = {
+        labId,
+        userId,
+        completedLessons: [],
+        completedExercises: [],
+        completedChallenges: [],
+        startedAt: new Date().toISOString(),
+        lastAccessedAt: new Date().toISOString(),
+        totalPoints: 0,
+        certificates: []
+      };
+    }
+
+    const exerciseKey = `${moduleId}_${lessonId}_${exerciseId}`;
+    if (!userProgress[key].completedExercises.includes(exerciseKey)) {
+      userProgress[key].completedExercises.push(exerciseKey);
+      userProgress[key].totalPoints += 25; // 25 pontos por exercício
+    }
+
+    userProgress[key].lastAccessedAt = new Date().toISOString();
+
+    res.json({
+      success: true,
+      progress: userProgress[key],
+      message: 'Exercício concluído com sucesso! +25 pontos'
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to update progress',
+      details: error.message
+    });
+  }
+});
+
+// Marcar desafio como concluído
+router.post('/progress/:userId/:labId/challenge', (req, res) => {
+  try {
+    const { userId, labId } = req.params;
+    const { challengeId, solution } = req.body;
+    const key = `${userId}_${labId}`;
+
+    if (!userProgress[key]) {
+      userProgress[key] = {
+        labId,
+        userId,
+        completedLessons: [],
+        completedExercises: [],
+        completedChallenges: [],
+        startedAt: new Date().toISOString(),
+        lastAccessedAt: new Date().toISOString(),
+        totalPoints: 0,
+        certificates: []
+      };
+    }
+
+    const lab = getLaboratoryById(labId);
+    const challenge = lab?.challenges?.find(c => c.id === challengeId);
+
+    if (!userProgress[key].completedChallenges.includes(challengeId)) {
+      userProgress[key].completedChallenges.push(challengeId);
+      const points = challenge?.points || 100;
+      userProgress[key].totalPoints += points;
+
+      // Verificar se ganhou certificado
+      const totalExercises = lab?.modules.reduce((acc, mod) => {
+        return acc + mod.lessons.reduce((acc2, lesson) => acc2 + (lesson.exercises?.length || 0), 0);
+      }, 0) || 0;
+
+      const completionRate = userProgress[key].completedExercises.length / totalExercises;
+
+      if (completionRate >= 0.8 && userProgress[key].completedChallenges.length >= 1) {
+        if (!userProgress[key].certificates.includes(labId)) {
+          userProgress[key].certificates.push(labId);
+        }
+      }
+    }
+
+    userProgress[key].lastAccessedAt = new Date().toISOString();
+
+    res.json({
+      success: true,
+      progress: userProgress[key],
+      message: `Desafio concluído! +${challenge?.points || 100} pontos`,
+      certificateEarned: userProgress[key].certificates.includes(labId)
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to update progress',
+      details: error.message
+    });
+  }
+});
+
+// Executar código Python no container
+router.post('/execute/:containerId', async (req, res) => {
+  try {
+    const { containerId } = req.params;
+    const { code, language } = req.body;
+
+    if (!code) {
+      return res.status(400).json({ error: 'Code is required' });
+    }
+
+    const container = docker.getContainer(containerId);
+
+    // Criar arquivo temporário com o código
+    const filename = `/tmp/code_${Date.now()}.${language === 'python' ? 'py' : 'sh'}`;
+    const createFileCmd = `cat > ${filename} << 'ENDOFFILE'
+${code}
+ENDOFFILE`;
+
+    // Criar arquivo
+    const createExec = await container.exec({
+      Cmd: ['/bin/sh', '-c', createFileCmd],
+      AttachStdout: true,
+      AttachStderr: true
+    });
+    await createExec.start({ hijack: true });
+
+    // Executar código
+    let executeCmd;
+    if (language === 'python') {
+      executeCmd = `python3 ${filename}`;
+    } else {
+      executeCmd = `bash ${filename}`;
+    }
+
+    const exec = await container.exec({
+      Cmd: ['/bin/sh', '-c', executeCmd],
+      AttachStdout: true,
+      AttachStderr: true
+    });
+
+    const stream = await exec.start({ hijack: true, stdin: true });
+
+    let output = '';
+    let errorOutput = '';
+
+    stream.on('data', (chunk) => {
+      const str = chunk.toString('utf-8');
+      // Docker usa multiplexing, primeiro byte indica tipo
+      const type = chunk[0];
+      const data = chunk.slice(8).toString('utf-8');
+
+      if (type === 1) { // stdout
+        output += data;
+      } else if (type === 2) { // stderr
+        errorOutput += data;
+      }
+    });
+
+    stream.on('end', () => {
+      // Limpar arquivo temporário
+      container.exec({
+        Cmd: ['/bin/sh', '-c', `rm -f ${filename}`],
+        AttachStdout: false,
+        AttachStderr: false
+      }).then(exec => exec.start({ hijack: true }));
+
+      res.json({
+        success: true,
+        output: output || errorOutput,
+        error: errorOutput && !output ? true : false
+      });
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to execute code',
+      details: error.message
+    });
+  }
+});
+
+// Obter ranking de usuários
+router.get('/leaderboard/:labId', (req, res) => {
+  try {
+    const { labId } = req.params;
+
+    // Filtrar progresso para o laboratório específico
+    const leaderboard = Object.values(userProgress)
+      .filter(p => p.labId === labId)
+      .map(p => ({
+        userId: p.userId,
+        totalPoints: p.totalPoints,
+        completedExercises: p.completedExercises.length,
+        completedChallenges: p.completedChallenges.length,
+        certificates: p.certificates.length
+      }))
+      .sort((a, b) => b.totalPoints - a.totalPoints)
+      .slice(0, 100); // Top 100
+
+    res.json({
+      success: true,
+      leaderboard
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to load leaderboard',
+      details: error.message
+    });
+  }
+});
+
+// Obter estatísticas gerais do usuário
+router.get('/stats/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Calcular estatísticas
+    const userLabs = Object.values(userProgress).filter(p => p.userId === userId);
+
+    const stats = {
+      totalLabs: userLabs.length,
+      totalPoints: userLabs.reduce((acc, p) => acc + p.totalPoints, 0),
+      totalExercises: userLabs.reduce((acc, p) => acc + p.completedExercises.length, 0),
+      totalChallenges: userLabs.reduce((acc, p) => acc + p.completedChallenges.length, 0),
+      totalCertificates: userLabs.reduce((acc, p) => acc + p.certificates.length, 0),
+      recentActivity: userLabs
+        .sort((a, b) => new Date(b.lastAccessedAt) - new Date(a.lastAccessedAt))
+        .slice(0, 5)
+        .map(p => ({
+          labId: p.labId,
+          lastAccessed: p.lastAccessedAt,
+          progress: p.completedExercises.length
+        }))
+    };
+
+    res.json({
+      success: true,
+      stats
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to load stats',
+      details: error.message
+    });
+  }
+});
 
 module.exports = router;

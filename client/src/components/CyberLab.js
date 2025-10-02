@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { connectWebSocket } from '../services/websocket';
+import LaboratoryView from './LaboratoryView';
+import TerminalEmulator from './TerminalEmulator';
+import ContainerSetupModal from './ContainerSetupModal';
+import '../styles/CyberLabImproved.css';
 import '../styles/CyberLab.css';
 
 const CyberLab = () => {
@@ -13,13 +17,26 @@ const CyberLab = () => {
   const [terminalInput, setTerminalInput] = useState('');
   const [containerStats, setContainerStats] = useState({});
   const [logs, setLogs] = useState({});
-  const [activeView, setActiveView] = useState('catalog'); // catalog, mycontainers, terminal
+  const [activeView, setActiveView] = useState('laboratories'); // catalog, mycontainers, terminal, laboratories, learning
   const [dockerStatus, setDockerStatus] = useState({ available: null, checking: true });
+
+  // Novos estados para laboratórios
+  const [laboratories, setLaboratories] = useState([]);
+  const [selectedLaboratory, setSelectedLaboratory] = useState(null);
+  const [userStats, setUserStats] = useState(null);
+  const userId = 'user_default'; // Em produção, obter do sistema de autenticação
+
+  // Estados para setup de container
+  const [showContainerSetup, setShowContainerSetup] = useState(false);
+  const [setupLaboratory, setSetupLaboratory] = useState(null);
+  const [labContainer, setLabContainer] = useState(null);
 
   useEffect(() => {
     checkDockerStatus();
     loadTemplates();
     loadContainers();
+    loadLaboratories();
+    loadUserStats();
 
     const ws = connectWebSocket((message) => {
       handleWebSocketMessage(message);
@@ -112,6 +129,93 @@ const CyberLab = () => {
       setTemplates([]);
       setCategories(['all']);
     }
+  };
+
+  const loadLaboratories = async () => {
+    try {
+      console.log('🔍 Carregando laboratórios...');
+      const response = await fetch('http://localhost:5000/api/cyberlab/laboratories');
+      const data = await response.json();
+      console.log('📚 Laboratórios recebidos:', data);
+      if (data.success) {
+        setLaboratories(data.laboratories || []);
+        console.log('✅ Laboratórios definidos:', data.laboratories.length);
+      }
+    } catch (error) {
+      console.error('❌ Error loading laboratories:', error);
+      setLaboratories([]);
+    }
+  };
+
+  const loadUserStats = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/cyberlab/stats/${userId}`);
+      const data = await response.json();
+      if (data.success) {
+        setUserStats(data.stats);
+      }
+    } catch (error) {
+      console.error('Error loading user stats:', error);
+    }
+  };
+
+  const openLaboratory = async (labId) => {
+    try {
+      // Carregar dados do laboratório
+      const labResponse = await fetch(`http://localhost:5000/api/cyberlab/laboratories/${labId}`);
+      const labData = await labResponse.json();
+
+      if (!labData.success) {
+        throw new Error('Laboratório não encontrado');
+      }
+
+      const laboratory = labData.laboratory;
+
+      // Verificar se já existe um container para este laboratório
+      const containersResponse = await fetch('http://localhost:5000/api/cyberlab/containers');
+      const containersData = await containersResponse.json();
+
+      // Procurar container existente para este lab
+      const existingContainer = containersData.containers?.find(c =>
+        c.name.includes(`cyberlab-${labId}`) && c.status === 'running'
+      );
+
+      if (existingContainer) {
+        // Container já existe e está rodando - ir direto para o aprendizado
+        console.log('✅ Container existente encontrado:', existingContainer);
+        setLabContainer(existingContainer);
+        setSelectedContainer(existingContainer);
+        setSelectedLaboratory(laboratory);
+        setActiveView('learning');
+      } else {
+        // Precisa configurar o container
+        console.log('🔧 Container não encontrado, abrindo modal de setup');
+        setSetupLaboratory(laboratory);
+        setShowContainerSetup(true);
+      }
+    } catch (error) {
+      console.error('Error loading laboratory:', error);
+      alert('Erro ao carregar laboratório: ' + error.message);
+    }
+  };
+
+  const handleContainerReady = (container) => {
+    console.log('✅ Container pronto:', container);
+    setLabContainer(container);
+    setSelectedContainer(container);
+    setSelectedLaboratory(setupLaboratory);
+    setShowContainerSetup(false);
+    setActiveView('learning');
+  };
+
+  const handleCloseContainerSetup = () => {
+    setShowContainerSetup(false);
+    setSetupLaboratory(null);
+  };
+
+  const closeLaboratory = () => {
+    setSelectedLaboratory(null);
+    setActiveView('laboratories');
   };
 
   const loadContainers = async () => {
@@ -248,13 +352,56 @@ const CyberLab = () => {
         </div>
       </div>
 
+      {/* Docker Status Warning */}
+      {!dockerStatus.checking && !dockerStatus.available && (
+        <div className="docker-warning">
+          <div className="warning-icon">⚠️</div>
+          <div className="warning-content">
+            <h3>Docker não está disponível</h3>
+            <p>{dockerStatus.hint || dockerStatus.error}</p>
+            <div className="warning-steps">
+              <strong>Passos para resolver:</strong>
+              <ol>
+                <li>Abra o Docker Desktop</li>
+                <li>Aguarde o Docker iniciar completamente</li>
+                <li>Recarregue esta página</li>
+              </ol>
+            </div>
+            <button onClick={checkDockerStatus} className="retry-btn">
+              🔄 Verificar Novamente
+            </button>
+          </div>
+        </div>
+      )}
+
+      {dockerStatus.checking && (
+        <div className="docker-checking">
+          <div className="spinner-large"></div>
+          <p>Verificando Docker...</p>
+        </div>
+      )}
+
+      {dockerStatus.available && dockerStatus.version && (
+        <div className="docker-status-ok">
+          <span className="status-icon">✅</span>
+          Docker {dockerStatus.version} - {dockerStatus.containers} containers, {dockerStatus.images} imagens
+        </div>
+      )}
+
       <div className="lab-navigation">
+        <button
+          className={`nav-btn ${activeView === 'laboratories' ? 'active' : ''}`}
+          onClick={() => setActiveView('laboratories')}
+        >
+          <span className="nav-icon">🎓</span>
+          Laboratórios de Aprendizado
+        </button>
         <button
           className={`nav-btn ${activeView === 'catalog' ? 'active' : ''}`}
           onClick={() => setActiveView('catalog')}
         >
           <span className="nav-icon">📚</span>
-          Catálogo de Ambientes
+          Catálogo de Containers
         </button>
         <button
           className={`nav-btn ${activeView === 'mycontainers' ? 'active' : ''}`}
@@ -417,46 +564,100 @@ const CyberLab = () => {
 
       {/* TERMINAL VIEW */}
       {activeView === 'terminal' && selectedContainer && (
-        <div className="terminal-view">
-          <div className="terminal-header">
-            <div className="terminal-title">
-              <span className="terminal-icon">💻</span>
-              Terminal: {selectedContainer.name}
+        <div className="terminal-view-wrapper">
+          <TerminalEmulator containerId={selectedContainer.id} />
+        </div>
+      )}
+
+      {/* LABORATORIES VIEW */}
+      {activeView === 'laboratories' && (
+        <div className="laboratories-view">
+          {userStats && (
+            <div className="user-stats-banner">
+              <div className="stat-card">
+                <div className="stat-icon">🏆</div>
+                <div className="stat-info">
+                  <div className="stat-value">{userStats.totalPoints}</div>
+                  <div className="stat-label">Pontos Totais</div>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon">📚</div>
+                <div className="stat-info">
+                  <div className="stat-value">{userStats.totalLabs}</div>
+                  <div className="stat-label">Labs Iniciados</div>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon">✅</div>
+                <div className="stat-info">
+                  <div className="stat-value">{userStats.totalExercises}</div>
+                  <div className="stat-label">Exercícios</div>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon">🎖️</div>
+                <div className="stat-info">
+                  <div className="stat-value">{userStats.totalCertificates}</div>
+                  <div className="stat-label">Certificados</div>
+                </div>
+              </div>
             </div>
-            <button
-              className="close-terminal-btn"
-              onClick={() => setActiveView('mycontainers')}
-            >
-              ✕
-            </button>
-          </div>
+          )}
 
-          <div className="terminal-output">
-            <pre>{terminalOutput[selectedContainer.id] || 'Terminal pronto. Digite comandos abaixo.\n'}</pre>
-          </div>
-
-          <form
-            className="terminal-input-form"
-            onSubmit={(e) => handleTerminalSubmit(e, selectedContainer.id)}
-          >
-            <span className="terminal-prompt">$</span>
-            <input
-              type="text"
-              value={terminalInput}
-              onChange={(e) => setTerminalInput(e.target.value)}
-              className="terminal-input"
-              placeholder="Digite um comando..."
-              autoFocus
-            />
-            <button type="submit" className="terminal-submit">
-              Executar
-            </button>
-          </form>
-
-          <div className="terminal-help">
-            <strong>Comandos úteis:</strong> ls, pwd, cd, cat, echo, python, node, etc.
+          <div className="laboratories-grid">
+            {laboratories.length === 0 ? (
+              <div className="no-laboratories">
+                <div className="no-labs-icon">📚</div>
+                <h3>Carregando laboratórios...</h3>
+                <p>Aguarde enquanto carregamos os laboratórios disponíveis.</p>
+              </div>
+            ) : (
+              laboratories.map(lab => (
+                <div key={lab.id} className="laboratory-card">
+                  <div className="lab-card-icon">{lab.icon}</div>
+                  <h3>{lab.name}</h3>
+                  <p className="lab-card-category">{lab.category}</p>
+                  <p className="lab-card-description">{lab.description}</p>
+                  <div className="lab-card-meta">
+                    <span className={`difficulty-badge ${lab.difficulty}`}>{lab.difficulty}</span>
+                    <span className="duration-badge">⏱️ {lab.duration}</span>
+                  </div>
+                  <div className="lab-card-stats">
+                    <span>📖 {lab.moduleCount} módulos</span>
+                    <span>💻 {lab.challengeCount} desafios</span>
+                  </div>
+                  <button
+                    className="start-lab-btn"
+                    onClick={() => openLaboratory(lab.id)}
+                  >
+                    🚀 Iniciar Laboratório
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
+      )}
+
+      {/* LEARNING VIEW */}
+      {activeView === 'learning' && selectedLaboratory && (
+        <LaboratoryView
+          laboratory={selectedLaboratory}
+          containerId={labContainer?.id || selectedContainer?.id}
+          userId={userId}
+          onClose={closeLaboratory}
+        />
+      )}
+
+      {/* CONTAINER SETUP MODAL */}
+      {showContainerSetup && setupLaboratory && (
+        <ContainerSetupModal
+          laboratory={setupLaboratory}
+          onClose={handleCloseContainerSetup}
+          onContainerReady={handleContainerReady}
+          existingContainer={null}
+        />
       )}
     </div>
   );

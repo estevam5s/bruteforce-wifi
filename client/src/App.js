@@ -265,7 +265,7 @@ function App() {
 
         <div className="sidebar-footer">
           <div className="version-info">
-            <span>v2.0.0 Professional</span>
+            <span>v1.0.0 Professional</span>
             <span className="education-badge">🎓 Educacional</span>
           </div>
         </div>
@@ -434,9 +434,9 @@ function App() {
         <div className="footer-content">
           <p>Desenvolvido para fins educacionais e testes de segurança autorizados</p>
           <div className="footer-links">
-            <span>v2.0.0 - Professional IT Tool</span>
+            <span>v1.0.0 - Professional IT Tool</span>
             <span>•</span>
-            <span>© 2024 WiFi Security Testing Tool</span>
+            <span>© 2025 WiFi Security Testing Tool</span>
           </div>
         </div>
       </footer>
