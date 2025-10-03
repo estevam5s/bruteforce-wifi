@@ -59,16 +59,45 @@ const TerminalEmulator = ({ containerId }) => {
     xtermRef.current = term;
     fitAddonRef.current = fitAddon;
 
-    // Aguardar um momento antes de fazer fit para garantir que o DOM está pronto
-    setTimeout(() => {
+    // Aguardar o terminal estar completamente inicializado antes de fazer fit
+    const tryFit = () => {
       try {
-        if (fitAddon && terminalRef.current) {
-          fitAddon.fit();
+        if (!fitAddon || !terminalRef.current) return false;
+
+        const element = terminalRef.current;
+
+        // Verificar se o elemento DOM tem dimensões válidas
+        if (element.offsetWidth === 0 || element.offsetHeight === 0) {
+          return false;
         }
+
+        // Verificar se o terminal xterm está completamente inicializado
+        // O viewport precisa existir antes de chamar fit()
+        if (!term._core || !term._core.viewport) {
+          return false;
+        }
+
+        fitAddon.fit();
+        return true;
       } catch (error) {
         console.warn('Erro ao fazer fit do terminal:', error);
+        return false;
       }
-    }, 100);
+    };
+
+    // Usar requestAnimationFrame para garantir que o browser renderizou tudo
+    // e múltiplas tentativas com delays incrementais
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        if (!tryFit()) {
+          setTimeout(() => {
+            if (!tryFit()) {
+              setTimeout(tryFit, 300);
+            }
+          }, 200);
+        }
+      }, 100);
+    });
 
     // Mensagem de boas-vindas
     term.writeln('\x1b[1;32m╔═══════════════════════════════════════════════════════╗\x1b[0m');
@@ -96,9 +125,21 @@ const TerminalEmulator = ({ containerId }) => {
     // Resize handler
     const handleResize = () => {
       try {
-        if (fitAddon && terminalRef.current) {
-          fitAddon.fit();
+        if (!fitAddon || !terminalRef.current || !term) return;
+
+        const element = terminalRef.current;
+
+        // Verificar se o elemento tem dimensões válidas
+        if (element.offsetWidth === 0 || element.offsetHeight === 0) {
+          return;
         }
+
+        // Verificar se o terminal está completamente inicializado
+        if (!term._core || !term._core.viewport) {
+          return;
+        }
+
+        fitAddon.fit();
       } catch (error) {
         console.warn('Erro ao fazer fit no resize:', error);
       }

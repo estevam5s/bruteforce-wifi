@@ -1,0 +1,138 @@
+.traffic-monitor {
+  padding: 20px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.traffic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.traffic-header h2 {
+  color: #00ff00;
+  margin: 0;
+}
+
+.traffic-header button {
+  padding: 10px 20px;
+  background: #00ff00;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.traffic-header button:hover:not(:disabled) {
+  background: #00cc00;
+  transform: translateY(-2px);
+}
+
+.traffic-header button:disabled {
+  background: #666;
+  cursor: not-allowed;
+}
+
+.traffic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.traffic-item {
+  background: #2a2a2a;
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s;
+}
+
+.traffic-item:hover {
+  transform: translateX(5px);
+  box-shadow: -5px 0 15px rgba(0, 255, 0, 0.3);
+}
+
+.traffic-ip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.ip-address {
+  font-size: 20px;
+  font-weight: bold;
+  color: #00ff00;
+  font-family: monospace;
+}
+
+.traffic-percentage {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.traffic-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #888;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  font-family: monospace;
+}
+
+.stat-item.total .stat-value {
+  color: #00ff00;
+}
+
+.traffic-bar {
+  height: 8px;
+  background: #1a1a1a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.traffic-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+  border-radius: 4px;
+}
+
+.loading, .no-traffic {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .traffic-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .traffic-ip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}

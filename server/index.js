@@ -15,6 +15,7 @@ const ddosResilienceRoutes = require('./routes/ddosResilience');
 const webBruteforceRoutes = require('./routes/webBruteforce');
 const stressTestRoutes = require('./routes/stressTest');
 const cyberLabRoutes = require('./routes/cyberLab');
+const networkManagementRoutes = require('./routes/networkManagement');
 
 const app = express();
 const server = http.createServer(app);
@@ -76,6 +77,7 @@ app.use('/api/ddos', ddosResilienceRoutes);
 app.use('/api/webbruteforce', webBruteforceRoutes);
 app.use('/api/stresstest', stressTestRoutes);
 app.use('/api/cyberlab', cyberLabRoutes);
+app.use('/api/netmgmt', networkManagementRoutes);
 
 // Servir arquivos estáticos do React em produção
 if (process.env.NODE_ENV === 'production') {

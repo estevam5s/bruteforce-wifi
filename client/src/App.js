@@ -18,6 +18,14 @@ import DDoSResilience from './components/DDoSResilience';
 import WebBruteforce from './components/WebBruteforce';
 import StressTest from './components/StressTest';
 import CyberLab from './components/CyberLab';
+import NetworkMap from './components/NetworkMap';
+import TrafficMonitor from './components/TrafficMonitor';
+import BrowsingHistory from './components/BrowsingHistory';
+import NetworkAlerts from './components/NetworkAlerts';
+import AccessControl from './components/AccessControl';
+import SiteBlocker from './components/SiteBlocker';
+import FirewallManager from './components/FirewallManager';
+import VulnerabilityScanner2 from './components/VulnerabilityScanner';
 import { connectWebSocket, disconnectWebSocket } from './services/websocket';
 import * as api from './services/api';
 import './App.css';
@@ -167,6 +175,62 @@ function App() {
       icon: '🛡️',
       category: 'Avançado',
       description: 'Análise de proteções DDoS'
+    },
+    {
+      id: 'networkmap',
+      label: 'Mapa da Rede',
+      icon: '🗺️',
+      category: 'Gerenciamento',
+      description: 'Dispositivos conectados'
+    },
+    {
+      id: 'traffic',
+      label: 'Monitor de Tráfego',
+      icon: '📊',
+      category: 'Gerenciamento',
+      description: 'Consumo de dados por dispositivo'
+    },
+    {
+      id: 'browsinghistory',
+      label: 'Histórico de Navegação',
+      icon: '🌐',
+      category: 'Gerenciamento',
+      description: 'Sites visitados por dispositivo'
+    },
+    {
+      id: 'networkalerts',
+      label: 'Alertas de Rede',
+      icon: '🔔',
+      category: 'Gerenciamento',
+      description: 'Notificações e regras'
+    },
+    {
+      id: 'accesscontrol',
+      label: 'Controle de Acesso',
+      icon: '🔐',
+      category: 'Gerenciamento',
+      description: 'Gerenciar dispositivos permitidos'
+    },
+    {
+      id: 'siteblocker',
+      label: 'Bloqueio de Sites',
+      icon: '🚫',
+      category: 'Gerenciamento',
+      description: 'Controle parental e bloqueios'
+    },
+    {
+      id: 'firewall',
+      label: 'Firewall',
+      icon: '🛡️',
+      category: 'Gerenciamento',
+      description: 'Regras de firewall'
+    },
+    {
+      id: 'vulnscanner',
+      label: 'Scanner de Vulnerabilidades',
+      icon: '🔍',
+      category: 'Gerenciamento',
+      description: 'Escaneamento com Nmap'
     },
     {
       id: 'docs',
@@ -417,6 +481,62 @@ function App() {
           {activeTab === 'ddos' && (
             <div className="tab-content fade-in">
               <DDoSResilience />
+            </div>
+          )}
+
+          {/* Mapa da Rede */}
+          {activeTab === 'networkmap' && (
+            <div className="tab-content fade-in">
+              <NetworkMap />
+            </div>
+          )}
+
+          {/* Monitor de Tráfego */}
+          {activeTab === 'traffic' && (
+            <div className="tab-content fade-in">
+              <TrafficMonitor />
+            </div>
+          )}
+
+          {/* Histórico de Navegação */}
+          {activeTab === 'browsinghistory' && (
+            <div className="tab-content fade-in">
+              <BrowsingHistory />
+            </div>
+          )}
+
+          {/* Alertas de Rede */}
+          {activeTab === 'networkalerts' && (
+            <div className="tab-content fade-in">
+              <NetworkAlerts />
+            </div>
+          )}
+
+          {/* Controle de Acesso */}
+          {activeTab === 'accesscontrol' && (
+            <div className="tab-content fade-in">
+              <AccessControl />
+            </div>
+          )}
+
+          {/* Bloqueio de Sites */}
+          {activeTab === 'siteblocker' && (
+            <div className="tab-content fade-in">
+              <SiteBlocker />
+            </div>
+          )}
+
+          {/* Firewall */}
+          {activeTab === 'firewall' && (
+            <div className="tab-content fade-in">
+              <FirewallManager />
+            </div>
+          )}
+
+          {/* Scanner de Vulnerabilidades */}
+          {activeTab === 'vulnscanner' && (
+            <div className="tab-content fade-in">
+              <VulnerabilityScanner2 />
             </div>
           )}
 
